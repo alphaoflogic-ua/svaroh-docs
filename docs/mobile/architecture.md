@@ -29,7 +29,7 @@ graph TD
 
 ## State Management
 
-Same Redux pattern as Station Frontend (Variant 2 — explicit dispatch). See [Station Frontend → Redux](/station/frontend#redux) for the full pattern.
+Same Redux pattern as Station Frontend — slices have only sync reducers, thunks dispatch lifecycle actions explicitly. See [Station Frontend → Redux](/station/frontend/redux) for the full pattern.
 
 ## Styling
 
