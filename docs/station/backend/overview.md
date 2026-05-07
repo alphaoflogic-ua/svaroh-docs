@@ -97,13 +97,13 @@ export const findById = async (id: string): Promise<Device | null> => {
 ```mermaid
 flowchart LR
     R["incoming request"]
-    R --> H{preHandler}
-    H -->|verifyToken| JWT["✅ JWT user"]
-    H -->|verifyDeviceToken| Dev["✅ ESP32 device"]
-    H -->|verifyAgentToken| Ag["✅ station-agent"]
-    JWT --> AU{authorize(roles)?}
-    AU -->|"['owner','admin']"| OK["proceed"]
-    AU -->|requireStationRole| OK
+    R --> H{"preHandler"}
+    H -->|"verifyToken"| JWT["✅ JWT user"]
+    H -->|"verifyDeviceToken"| Dev["✅ ESP32 device"]
+    H -->|"verifyAgentToken"| Ag["✅ station-agent"]
+    JWT --> AU{"authorize roles?"}
+    AU -->|"owner / admin"| OK["proceed"]
+    AU -->|"requireStationRole"| OK
 ```
 
 | Hook | Verifies | Source |
