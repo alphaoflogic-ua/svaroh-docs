@@ -28,9 +28,11 @@ graph TD
     Pages --> Router
 ```
 
-## Redux Store Pattern (Variant 2) {#redux}
+## Redux Store Pattern {#redux}
 
-Slices contain **only sync reducers**. Thunks dispatch lifecycle actions explicitly.
+Custom convention used across station + mobile: **slices contain only sync reducers**, and thunks dispatch lifecycle actions explicitly (instead of the standard `createAsyncThunk` + `extraReducers` approach).
+
+**Why:** explicit dispatch keeps loading/error state under direct control of the thunk body — easier to reason about optimistic updates, retries, and conditional success dispatches without scattering logic across `extraReducers` cases.
 
 ```mermaid
 sequenceDiagram
