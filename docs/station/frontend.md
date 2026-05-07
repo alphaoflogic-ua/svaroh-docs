@@ -37,12 +37,11 @@ Custom convention used across station + mobile: **slices contain only sync reduc
 ```mermaid
 sequenceDiagram
     participant UI as Component
-    participant Hook as useDevicesSlice
+    participant Slice as devicesSlice
     participant Thunk as fetchDevicesThunk
     participant API as transport/http
-    participant Slice as devicesSlice
 
-    UI->>Hook: useDevicesSlice((s,a) => [s.items, a.fetchDevicesThunk])
+    UI->>Slice: read state via useDevicesSlice
     UI->>Thunk: fetchDevicesThunk({stationId})
     Thunk->>Slice: dispatch fetchRequest (isLoading=true)
     Thunk->>API: getDevices(stationId)
