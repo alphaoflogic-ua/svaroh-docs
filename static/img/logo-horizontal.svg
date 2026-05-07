@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 160" role="img" aria-label="SmartHome">
+  <title>SmartHome — horizontal logo (light)</title>
+
+  <!-- Icon mark (light variant for white background) -->
+  <g transform="translate(16,16) scale(0.5)">
+    <rect x="32"  y="32"  width="88" height="88" rx="20" fill="#D1D4D8"/>
+    <rect x="136" y="32"  width="88" height="88" rx="20" fill="#B3B7BC"/>
+    <rect x="32"  y="136" width="88" height="88" rx="20" fill="#8E9298"/>
+    <rect x="136" y="136" width="88" height="88" rx="20" fill="#24DDA0"/>
+    <circle cx="180" cy="180" r="9" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="168" y="104"
+        font-family="'Plus Jakarta Sans','Inter','SF Pro Display',system-ui,-apple-system,Segoe UI,Roboto,sans-serif"
+        font-weight="800"
+        font-size="78"
+        letter-spacing="-2"
+        fill="#0B0F19">SmartHome</text>
+</svg>

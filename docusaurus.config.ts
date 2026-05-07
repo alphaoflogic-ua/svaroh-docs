@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Svaroh Docs',
   tagline: 'Smart Home Ecosystem',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.svg',
 
   url: 'https://docs.svaroh.com',
   baseUrl: '/',
@@ -57,7 +57,12 @@ const config: Config = {
 
   themeConfig: {
     navbar: {
-      title: 'Svaroh Docs',
+      logo: {
+        alt: 'Svaroh',
+        src: 'img/logo-horizontal.svg',
+        srcDark: 'img/logo-horizontal-dark.svg',
+        width: 180,
+      },
       items: [
         {type: 'localeDropdown', position: 'right'},
       ],

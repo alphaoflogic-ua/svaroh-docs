@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="SmartHome">
+  <title>SmartHome favicon</title>
+  <!-- Favicon: simplified for small sizes. No outer padding, bigger dot for legibility at 16-24px. -->
+  <!-- Grid: tile 14, gap 4, tile 14 = 32 -->
+  <rect x="0"  y="0"  width="14" height="14" rx="3" fill="#3A3D43"/>
+  <rect x="18" y="0"  width="14" height="14" rx="3" fill="#4B4F55"/>
+  <rect x="0"  y="18" width="14" height="14" rx="3" fill="#5C6066"/>
+  <rect x="18" y="18" width="14" height="14" rx="3" fill="#24DDA0"/>
+  <circle cx="25" cy="25" r="2.2" fill="#FFFFFF"/>
+</svg>
