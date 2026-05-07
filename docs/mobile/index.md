@@ -8,5 +8,5 @@ sidebar_position: 6
 Expo / React Native app.
 
 - [Architecture](./architecture) — Redux, transport, navigation
-- [BLE Provisioning](./ble-provisioning) — pairing new devices
+- [Device Provisioning](./ble-provisioning) — adding new ESP32 devices
 - [Deployment](./deployment) — TestFlight & App Store

@@ -1,52 +1,59 @@
 ---
-title: BLE Provisioning
+title: Device Provisioning
 sidebar_position: 2
 ---
 
-# 🔵 BLE Provisioning
+# 📲 Device Provisioning
 
-Adding a new ESP32 device. Mobile uses Bluetooth LE to send Wi-Fi credentials directly to the device.
+The mobile app does **not** do BLE directly. BLE provisioning is handled by the **Station backend (RPi)** via Python bleak — the mobile app's role is limited to the Station Frontend web UI or receiving WS notifications.
 
-## Sequence {#sequence}
+## Actual Flow {#sequence}
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant U as 👤 User
-    participant M as 📱 Mobile
+    participant F as 🌐 Station Frontend
+    participant B as 🖥️ Station Backend
+    participant PY as 🐍 ble_bridge.py
     participant E as 💡 ESP32 (factory)
-    participant S as 🏠 Station
 
     Note over E: factory state<br/>BLE advertising
-    U->>M: "Add device"
-    M->>E: BLE scan
-    E-->>M: advertise (deviceType, chipId)
-    U->>M: select device + enter Wi-Fi
-    M->>E: BLE write characteristic<br/>{ ssid, psk, stationHost }
+    U->>F: open "Add Device"
+    F->>B: WS provisioning_start
+    B->>PY: startScan()
+    PY-->>B: candidate { externalId, deviceType }
+    B-->>F: WS provisioning_candidate
+
+    U->>F: select candidate + enter Wi-Fi
+    F->>B: POST /provisioning/add { externalId, ssid, psk, ... }
+    B->>PY: connectAndWrite(externalId, credentials)
+    PY->>E: BLE write characteristic<br/>{ ssid, psk, stationHost }
     E->>E: store + connect Wi-Fi
-    E->>S: MQTT .../handshake { type, firmwareVersion, chip }
-    S-->>E: MQTT .../handshake/ack { status: "ok" }
-    S-->>M: WS provisioning candidate appeared
-    U->>M: confirm + name device
-    M->>S: POST /api/devices (claim candidate)
-    S-->>M: device record
-    Note over M,S: device now visible in app
+
+    E->>B: MQTT .../handshake
+    B-->>E: MQTT .../handshake/ack
+    B-->>F: WS device appeared
+    Note over F: device now in device list
 ```
 
-## On the Backend Side
+## Backend Modules
 
-Provisioning flow goes through `device-bootstrap/` module:
-
-- `bleBridge.ts` — Node wrapper around Python `bleak` (`packages/backend/scripts/ble_bridge.py`)
-- `bleProvisionService.ts` — scan/provision business logic
-- `provisioningManager.ts` — tracks WS-connected candidates
+- `bleBridge.ts` — spawns Python subprocess, exposes `startScan()` / `connectAndWrite()`
+- `bleProvisionService.ts` — orchestrates scan → provision
+- `provisioningManager.ts` — broadcasts candidates via WS to all connected clients
 
 [Source ↗](https://github.com/alphaoflogic-ua/smart-home/tree/develop/packages/backend/src/modules/device-bootstrap)
 
 :::note Why Python for BLE?
-`bleak` is the most reliable cross-platform BLE library; Node BLE bindings have rough edges on Linux. The Node side spawns Python as a child process and exchanges JSON over stdin/stdout. **All business logic stays in Node.**
+`bleak` is the most reliable BLE library on Linux. The RPi runs Python as a child process and exchanges JSON over stdin/stdout. All business logic stays in Node.
 :::
+
+## Mobile App Role
+
+Mobile app has **no BLE libraries** and no provisioning screen. New devices are added via the Station local web UI (`smartstation.local`) which is the Station Frontend SPA.
 
 ## Reference
 
-- [ESP32 BLE provisioning (NimBLE) ↗](https://github.com/alphaoflogic-ua/smart-home/tree/develop/firmware/lib/smart-home-core)
+- [ESP32 BLE (NimBLE) ↗](https://github.com/alphaoflogic-ua/smart-home/tree/develop/firmware/lib/smart-home-core)
+- [device-bootstrap module ↗](https://github.com/alphaoflogic-ua/smart-home/tree/develop/packages/backend/src/modules/device-bootstrap)
