@@ -4,15 +4,30 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to deploy'
+        required: true
+        default: 'main'
+
+# Один деплой за раз, чтобы не было гонок при rsync.
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
@@ -23,14 +38,57 @@ jobs:
       - name: Build (all locales)
         run: npm run build
 
+      - name: Record version
+        run: |
+          {
+            echo "version=${GITHUB_REF_NAME}"
+            echo "commit=${GITHUB_SHA}"
+            echo "deployed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > build/VERSION
+          cat build/VERSION
+
       - name: Setup SSH
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DOCS_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.DOCS_HOST }} >> ~/.ssh/known_hosts
+          # heredoc + trailing newline — иначе libcrypto иногда ругается на ed25519
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keygen -y -f ~/.ssh/id_deploy > /dev/null
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
-      - name: Deploy via rsync
+      - name: Ensure target dir exists
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          rsync -avz --delete build/ \
-            ${{ secrets.DOCS_USER }}@${{ secrets.DOCS_HOST }}:/var/www/svaroh-docs/
+          ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes \
+            "${SSH_USER}@${SSH_HOST}" 'mkdir -p ~/svaroh-docs/build'
+
+      - name: Rsync build to server
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=yes" \
+            build/ "${SSH_USER}@${SSH_HOST}:~/svaroh-docs/build/"
+
+      - name: Health check
+        env:
+          HEALTH_URL: ${{ vars.DOCS_HEALTH_URL || 'https://docs.svaroh.com/' }}
+        run: |
+          echo "Waiting 5s for Caddy to pick up files..."
+          sleep 5
+          for i in 1 2 3 4 5; do
+            if curl -fsS -o /dev/null "$HEALTH_URL"; then
+              echo "Health check passed on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
+          echo "Health check failed after 5 attempts"
+          exit 1
