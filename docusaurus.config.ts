@@ -43,6 +43,18 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    [
+      require.resolve('@easyops-cn/docusaurus-search-local'),
+      {
+        hashed: true,
+        language: ['en'],   // 'uk' is not in the supported list — English-only search index
+        docsRouteBasePath: '/',
+        indexBlog: false,
+      },
+    ],
+  ],
+
   themeConfig: {
     navbar: {
       title: 'Svaroh Docs',
