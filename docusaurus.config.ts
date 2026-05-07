@@ -57,11 +57,10 @@ const config: Config = {
 
   themeConfig: {
     navbar: {
+      title: 'Svaroh Docs',
       logo: {
         alt: 'Svaroh',
-        src: 'img/logo-horizontal.svg',
-        srcDark: 'img/logo-horizontal-dark.svg',
-        width: 180,
+        src: 'img/logo.svg',
       },
       items: [
         {type: 'localeDropdown', position: 'right'},

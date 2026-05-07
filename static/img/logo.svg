@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="SmartHome">
-  <title>SmartHome</title>
-  <!-- Base icon (transparent background). Works on dark and light surfaces. -->
-  <!-- Grid: 32 padding, 88 tile, 16 gap, 88 tile, 32 padding = 256 -->
-  <rect x="32"  y="32"  width="88" height="88" rx="20" fill="#3A3D43"/>
-  <rect x="136" y="32"  width="88" height="88" rx="20" fill="#4B4F55"/>
-  <rect x="32"  y="136" width="88" height="88" rx="20" fill="#5C6066"/>
-  <rect x="136" y="136" width="88" height="88" rx="20" fill="#24DDA0"/>
-  <circle cx="180" cy="180" r="9" fill="#FFFFFF"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Svaroh">
+  <title>Svaroh</title>
+  <style>
+    .bg-1 { fill: #B3B7BC; }
+    .bg-2 { fill: #8E9298; }
+    .active { fill: #24DDA0; }
+    @media (prefers-color-scheme: light) {
+      .bg-1 { fill: #878C93; }
+      .bg-2 { fill: #646970; }
+      .active { fill: #0D9F82; }
+    }
+  </style>
+  <rect class="bg-1" x="2" y="2" width="20" height="20" rx="4"/>
+  <rect class="bg-2" x="10" y="10" width="20" height="20" rx="4"/>
+  <rect class="active" x="10" y="10" width="12" height="12"/>
 </svg>
