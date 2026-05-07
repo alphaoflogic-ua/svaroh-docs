@@ -25,62 +25,62 @@ flowchart LR
     Bin --> PS
 ```
 
-Цель: выпустить `smart-home-mobile` в TestFlight как internal + public beta, чтобы тестировать на реальных iPhone с реальным cloud-сервисом.
+Goal: ship `smart-home-mobile` to TestFlight as internal + public beta so it can be tested on real iPhones against the real cloud service.
 
-**После первоначальной настройки** деплой = `git push main`. GitHub Actions автоматически билдит и отправляет в TestFlight.
+**After the initial setup**, deployment is just `git push main`. GitHub Actions automatically builds and submits to TestFlight.
 
-**Ориентир по времени:** ~2 часа one-time setup + 24–72 часа ожидания Apple.
-**Стартовый бюджет:** ~$99 (Apple Developer Program на год).
+**Time estimate:** ~2 hours of one-time setup + 24–72 hours waiting on Apple.
+**Initial budget:** ~$99 (Apple Developer Program, annual).
 
 ---
 
-## Stage 0. Предусловия
+## Stage 0. Prerequisites
 
-- [ ] 0.1. Mac с Xcode (или доступ к EAS cloud-билдам — можно без Mac).
-- [ ] 0.2. iPhone для тестирования (iOS 15+).
-- [ ] 0.3. Apple ID (https://appleid.apple.com, бесплатно).
-- [ ] 0.4. Международная карта (Visa/MC, Wise/Monobank FX).
+- [ ] 0.1. Mac with Xcode (or access to EAS cloud builds — Mac is optional in that case).
+- [ ] 0.2. iPhone for testing (iOS 15+).
+- [ ] 0.3. Apple ID (https://appleid.apple.com, free).
+- [ ] 0.4. International card (Visa/MC, Wise/Monobank FX).
 - [ ] 0.5. Node 20+: `node --version`.
-- [ ] 0.6. **Cloud staging уже задеплоен** (см. `smart-home-cloud/docs/STAGING_DEPLOYMENT_CHECKLIST.md`) — нужен URL типа `https://api.staging.<DOMAIN>`.
+- [ ] 0.6. **Cloud staging already deployed** (see `smart-home-cloud/docs/STAGING_DEPLOYMENT_CHECKLIST.md`) — you'll need a URL like `https://api.staging.<DOMAIN>`.
 
 ---
 
-## Stage 1. Apple Developer Program (30 мин + 24–72ч ожидания)
+## Stage 1. Apple Developer Program (30 min + 24–72h wait)
 
-- [ ] 1.1. Войти на https://developer.apple.com/account с Apple ID.
-- [ ] 1.2. Включить **двухфакторку** на Apple ID — https://appleid.apple.com → _Sign-In and Security_.
+- [ ] 1.1. Sign in to https://developer.apple.com/account with your Apple ID.
+- [ ] 1.2. Enable **two-factor auth** on your Apple ID — https://appleid.apple.com → _Sign-In and Security_.
 - [ ] 1.3. https://developer.apple.com/programs/enroll/ → _Start Your Enrollment_.
-- [ ] 1.4. Выбрать **Individual / Sole Proprietor** (НЕ Organization — требует D-U-N-S).
-- [ ] 1.5. Заполнить: имя латиницей как в документе, адрес, телефон.
-- [ ] 1.6. Оплатить $99. Ожидание — 24–48ч, иногда до 7 дней.
-- [ ] 1.7. После одобрения: https://developer.apple.com/account → статус _Active_.
+- [ ] 1.4. Choose **Individual / Sole Proprietor** (NOT Organization — that requires a D-U-N-S number).
+- [ ] 1.5. Fill in: name in Latin script as on your ID document, address, phone.
+- [ ] 1.6. Pay $99. Wait — 24–48h, sometimes up to 7 days.
+- [ ] 1.7. Once approved: https://developer.apple.com/account → status _Active_.
 
-**⚠️ Пока ждёшь — продолжай Stage 2–4 параллельно.**
+**⚠️ While you wait — proceed with Stage 2–4 in parallel.**
 
-**Проверка:** на developer.apple.com/account видно "Apple Developer Program — Enrolled".
+**Verification:** developer.apple.com/account shows "Apple Developer Program — Enrolled".
 
 ---
 
-## Stage 2. EAS Setup (15 мин)
+## Stage 2. EAS Setup (15 min)
 
-- [ ] 2.1. Установить EAS CLI:
+- [ ] 2.1. Install EAS CLI:
   ```bash
   npm install -g eas-cli
   eas --version  # >= 14.x
   ```
-- [ ] 2.2. Зарегистрироваться на https://expo.dev (бесплатно).
-- [ ] 2.3. Залогиниться:
+- [ ] 2.2. Sign up at https://expo.dev (free).
+- [ ] 2.3. Log in:
   ```bash
   cd /Users/andrejprudnikov/WebstormProjects/smart-home-mobile
   eas login
   eas whoami
   ```
-- [ ] 2.4. Инициализировать проект:
+- [ ] 2.4. Initialize the project:
   ```bash
   eas init
   ```
-- [ ] 2.5. Синхронизировать `version` в `package.json` и `app.json` → обе `"1.0.0"`.
-- [ ] 2.6. В `app.json` добавить `ios.buildNumber`:
+- [ ] 2.5. Sync `version` between `package.json` and `app.json` → both `"1.0.0"`.
+- [ ] 2.6. In `app.json` add `ios.buildNumber`:
   ```json
   "ios": {
     "supportsTablet": true,
@@ -88,29 +88,29 @@ flowchart LR
     "buildNumber": "1"
   }
   ```
-- [ ] 2.7. Создать `eas.json` (см. шаблон в конце файла).
-- [ ] 2.8. Настроить OTA-обновления:
+- [ ] 2.7. Create `eas.json` (see template at the end of this file).
+- [ ] 2.8. Configure OTA updates:
   ```bash
   eas update:configure
   ```
-  Добавит `runtimeVersion` в `app.json`.
+  This adds `runtimeVersion` to `app.json`.
 
-**Проверка:** `eas build:configure` проходит без ошибок.
+**Verification:** `eas build:configure` runs without errors.
 
 ---
 
-## Stage 3. Env и Assets (15 мин)
+## Stage 3. Env and Assets (15 min)
 
-### Переменные окружения
+### Environment variables
 
-- [ ] 3.1. В `app.json` добавить блок `extra`:
+- [ ] 3.1. In `app.json` add an `extra` block:
   ```json
   "extra": {
     "cloudApiUrl": "http://localhost:4000",
     "cloudWssUrl": "ws://localhost:4000/ws"
   }
   ```
-- [ ] 3.2. Создать/обновить `src/shared/config.ts`:
+- [ ] 3.2. Create/update `src/shared/config.ts`:
 
   ```typescript
   import Constants from 'expo-constants';
@@ -123,58 +123,58 @@ flowchart LR
   };
   ```
 
-- [ ] 3.3. Проверить что `transport/http/client.ts` и WS клиент читают `config.cloudApiUrl` / `config.cloudWssUrl`, а не хардкодят URL.
+- [ ] 3.3. Confirm `transport/http/client.ts` and the WS client read `config.cloudApiUrl` / `config.cloudWssUrl` instead of hardcoding URLs.
 
 ### Assets
 
-- [ ] 3.4. `assets/icon.png` — **1024×1024 PNG без прозрачности** (Apple отклонит если есть alpha).
+- [ ] 3.4. `assets/icon.png` — **1024×1024 PNG, no transparency** (Apple rejects builds with an alpha channel).
 - [ ] 3.5. `assets/splash-icon.png` — ≥1242×1242.
 - [ ] 3.6. `assets/adaptive-icon.png` — 1024×1024 (Android).
-- [ ] 3.7. Проверка alpha:
+- [ ] 3.7. Alpha check:
   ```bash
   sips -g hasAlpha assets/icon.png
-  # hasAlpha: no  ← должно быть
+  # hasAlpha: no  ← expected
   ```
 
 ---
 
-## Stage 4. App Store Connect (25 мин, после одобрения Apple Dev)
+## Stage 4. App Store Connect (25 min, after Apple Dev approval)
 
-**⚠️ Только после того как Apple Dev Enrollment в статусе Active.**
+**⚠️ Only after Apple Dev Enrollment is in Active state.**
 
 ### App Record
 
 - [ ] 4.1. https://appstoreconnect.apple.com → _My Apps_ → "+" → _New App_.
-- [ ] 4.2. Заполнить:
+- [ ] 4.2. Fill in:
   - Platforms: **iOS**
   - Name: `Smart Home`
-  - Primary Language: **English (U.S.)** или **Ukrainian**
-  - Bundle ID: `com.andriiprudnikov.smarthomemobile` (если нет — зарегистрировать на https://developer.apple.com/account/resources/identifiers/list)
+  - Primary Language: **English (U.S.)** or **Ukrainian**
+  - Bundle ID: `com.andriiprudnikov.smarthomemobile` (if missing — register it at https://developer.apple.com/account/resources/identifiers/list)
   - SKU: `smart-home-mobile-001`
   - User Access: Full Access
-- [ ] 4.3. _Create_. Запомнить **числовой Apple ID** (URL или App Information → Apple ID).
+- [ ] 4.3. _Create_. Note down the **numeric Apple ID** (URL or App Information → Apple ID).
 
-### API Key (для автоматического submit)
+### API Key (for automated submit)
 
 - [ ] 4.4. _Users and Access_ → _Integrations_ → _App Store Connect API_ → _Team Keys_ → "+".
 - [ ] 4.5. Name: `EAS Submit`, Access: **App Manager**.
-- [ ] 4.6. Скачать `.p8` файл (**один раз!**) → сохранить в `~/Documents/smart-home-asc-key.p8` (НЕ в репо!).
-- [ ] 4.7. Записать **Issuer ID** и **Key ID**.
-- [ ] 4.8. Заполнить `eas.json` → `submit.production.ios` реальными значениями (ascAppId, appleTeamId, ascApiKeyIssuerId, ascApiKeyId).
+- [ ] 4.6. Download the `.p8` file (**only once!**) → save to `~/Documents/smart-home-asc-key.p8` (NOT in the repo!).
+- [ ] 4.7. Record the **Issuer ID** and **Key ID**.
+- [ ] 4.8. Fill in `eas.json` → `submit.production.ios` with the real values (ascAppId, appleTeamId, ascApiKeyIssuerId, ascApiKeyId).
 
 ---
 
-## Stage 5. CI/CD — GitHub Actions (15 мин)
+## Stage 5. CI/CD — GitHub Actions (15 min)
 
 ### Secrets
 
-- [ ] 5.1. Создать Expo token: https://expo.dev → Account Settings → Access Tokens → Create.
-- [ ] 5.2. В GitHub репозитории → Settings → Secrets and variables → Actions → добавить:
-  - `EXPO_TOKEN` — токен из 5.1
+- [ ] 5.1. Create an Expo token: https://expo.dev → Account Settings → Access Tokens → Create.
+- [ ] 5.2. In the GitHub repo → Settings → Secrets and variables → Actions → add:
+  - `EXPO_TOKEN` — token from 5.1
 
 ### Workflow: TestFlight Deploy (push to main)
 
-- [ ] 5.3. Создать `.github/workflows/testflight.yml`:
+- [ ] 5.3. Create `.github/workflows/testflight.yml`:
 
   ```yaml
   name: TestFlight Deploy
@@ -208,7 +208,7 @@ flowchart LR
 
 ### Workflow: OTA Update (JS-only changes)
 
-- [ ] 5.4. Создать `.github/workflows/ota-update.yml`:
+- [ ] 5.4. Create `.github/workflows/ota-update.yml`:
 
   ```yaml
   name: OTA Update
@@ -248,75 +248,75 @@ flowchart LR
 
 ---
 
-## Stage 6. Первый билд (one-time, ручной)
+## Stage 6. First build (one-time, manual)
 
-Первый раз нужно запустить вручную — EAS спросит про credentials.
+The first build has to be triggered manually — EAS will prompt for credentials.
 
-- [ ] 6.1. Проверить staging: `curl https://api.staging.<DOMAIN>/health` → 200.
-- [ ] 6.2. Запустить:
+- [ ] 6.1. Verify staging: `curl https://api.staging.<DOMAIN>/health` → 200.
+- [ ] 6.2. Run:
   ```bash
   eas build --profile production --platform ios --auto-submit
   ```
-- [ ] 6.3. EAS спросит про credentials — _Let EAS handle it_:
+- [ ] 6.3. EAS will ask about credentials — _Let EAS handle it_:
   - Distribution Certificate: create new
   - Provisioning Profile: create new
-  - Push Key: skip (если не используешь push)
-- [ ] 6.4. Ждать билд (15–60 мин в free tier). Прогресс: https://expo.dev → Builds.
-- [ ] 6.5. Билд автоматически уйдёт в TestFlight. В App Store Connect → TestFlight → _Builds_ — статус _Processing_ → _Ready to Test_.
-- [ ] 6.6. Если _Missing Compliance_ — кликнуть → _Encryption_ → ответить что НЕ используешь нестандартную криптографию.
+  - Push Key: skip (if you don't use push)
+- [ ] 6.4. Wait for the build (15–60 min on the free tier). Progress: https://expo.dev → Builds.
+- [ ] 6.5. The build is automatically submitted to TestFlight. In App Store Connect → TestFlight → _Builds_ — status _Processing_ → _Ready to Test_.
+- [ ] 6.6. If you see _Missing Compliance_ — click it → _Encryption_ → answer that you do NOT use non-standard cryptography.
 
 **Troubleshooting:**
 
-- **"Invalid bundle identifier"** — bundle ID в `app.json` не совпадает с зарегистрированным в Stage 4.
-- **"No profiles matching"** — перезапусти `eas build` и переделай credentials.
+- **"Invalid bundle identifier"** — the bundle ID in `app.json` doesn't match the one registered in Stage 4.
+- **"No profiles matching"** — re-run `eas build` and recreate credentials.
 
 ---
 
-## Stage 7. Testing и Public Beta (20 мин)
+## Stage 7. Testing and Public Beta (20 min)
 
 ### Internal testing
 
-- [ ] 7.1. App Store Connect → TestFlight → _Internal Testing_ → _App Store Connect Users_ → добавить свой email.
-- [ ] 7.2. На iPhone установить **TestFlight** из App Store.
-- [ ] 7.3. Открыть invite → Install → проверить:
-  - Приложение открывается
-  - Scan QR работает
-  - Запросы идут на `api.staging.<DOMAIN>`
+- [ ] 7.1. App Store Connect → TestFlight → _Internal Testing_ → _App Store Connect Users_ → add your own email.
+- [ ] 7.2. Install **TestFlight** from the App Store on your iPhone.
+- [ ] 7.3. Open the invite → Install → verify:
+  - The app launches
+  - Scan QR works
+  - Requests go to `api.staging.<DOMAIN>`
 
 ### Public beta
 
 - [ ] 7.4. TestFlight → _External Testing_ → _Add New Group_ → `Public Beta`.
-- [ ] 7.5. _Add Build_ → выбрать билд.
-- [ ] 7.6. Заполнить Test Information (What to Test, Email).
-- [ ] 7.7. Apple запросит **Beta App Review** (24–48ч).
-- [ ] 7.8. После одобрения — включить _Public Link_ → скопировать `https://testflight.apple.com/join/XXXXXXXX`.
+- [ ] 7.5. _Add Build_ → pick the build.
+- [ ] 7.6. Fill in Test Information (What to Test, Email).
+- [ ] 7.7. Apple will request a **Beta App Review** (24–48h).
+- [ ] 7.8. Once approved — enable _Public Link_ → copy `https://testflight.apple.com/join/XXXXXXXX`.
 
 ---
 
-## Повседневный workflow (после setup)
+## Day-to-day workflow (after setup)
 
-### Полный релиз (native-изменения)
+### Full release (native changes)
 
 ```
 git push main  →  GitHub Actions  →  EAS Build  →  auto-submit  →  TestFlight
 ```
 
-Ничего делать не нужно. Через ~30–40 мин билд появится в TestFlight.
+Nothing to do. The build shows up in TestFlight in ~30–40 min.
 
-### OTA-обновление (JS-only изменения, без ре-билда)
+### OTA update (JS-only changes, no rebuild)
 
-GitHub → Actions → _OTA Update_ → Run workflow → ввести message.
+GitHub → Actions → _OTA Update_ → Run workflow → enter a message.
 
-Тестеры получат обновление при следующем запуске приложения — мимо App Store.
+Testers receive the update on the next app launch — bypassing the App Store.
 
-**Когда OTA, а когда полный билд?**
+**When OTA vs full build?**
 
-- OTA: UI-правки, баг-фиксы в JS, изменения стилей, новые экраны
-- Полный билд: новые native-модули, обновление Expo SDK, изменения `app.json`
+- OTA: UI tweaks, JS bug fixes, style changes, new screens
+- Full build: new native modules, Expo SDK upgrade, `app.json` changes
 
 ---
 
-## Шаблон: `eas.json`
+## Template: `eas.json`
 
 ```json
 {
@@ -359,8 +359,8 @@ GitHub → Actions → _OTA Update_ → Run workflow → ввести message.
   "submit": {
     "production": {
       "ios": {
-        "ascAppId": "<числовой App ID из ASC>",
-        "appleTeamId": "<Team ID из developer.apple.com/account>",
+        "ascAppId": "<numeric App ID from ASC>",
+        "appleTeamId": "<Team ID from developer.apple.com/account>",
         "ascApiKeyPath": "/Users/andrejprudnikov/Documents/smart-home-asc-key.p8",
         "ascApiKeyIssuerId": "<Issuer ID>",
         "ascApiKeyId": "<Key ID>"
@@ -372,14 +372,14 @@ GitHub → Actions → _OTA Update_ → Run workflow → ввести message.
 
 ---
 
-## Итоговая проверка
+## Final checklist
 
-- [ ] Apple Developer Program активен
-- [ ] App record в App Store Connect создан
-- [ ] GitHub Actions workflow закоммичен
-- [ ] `EXPO_TOKEN` добавлен в GitHub Secrets
-- [ ] Первый ручной билд прошёл, credentials в EAS
-- [ ] Билд в TestFlight со статусом _Ready to Test_
-- [ ] Приложение работает на iPhone через TestFlight
-- [ ] Beta App Review пройден, public link активен
-- [ ] Push в `main` → автоматический билд → TestFlight
+- [ ] Apple Developer Program is active
+- [ ] App record created in App Store Connect
+- [ ] GitHub Actions workflow committed
+- [ ] `EXPO_TOKEN` added to GitHub Secrets
+- [ ] First manual build succeeded, credentials stored in EAS
+- [ ] Build in TestFlight with status _Ready to Test_
+- [ ] App runs on iPhone via TestFlight
+- [ ] Beta App Review passed, public link active
+- [ ] Push to `main` → automatic build → TestFlight
