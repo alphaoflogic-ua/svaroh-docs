@@ -5,9 +5,7 @@ slug: /
 sidebar_position: 0
 ---
 
-<img src="/img/logo.svg" alt="Svaroh" width="96" />
-
-# Svaroh Smart Home
+# <img src="/img/logo.svg" alt="" width="48" style={{verticalAlign: 'middle', marginRight: '12px'}} />Svaroh Smart Home
 
 Внутрішня база знань екосистеми Svaroh.
 
