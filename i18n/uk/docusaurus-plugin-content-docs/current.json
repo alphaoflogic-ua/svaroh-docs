@@ -1,0 +1,38 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.docs.category.🏗️ Architecture": {
+    "message": "🏗️ Architecture",
+    "description": "The label for category '🏗️ Architecture' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.🚀 Processes": {
+    "message": "🚀 Processes",
+    "description": "The label for category '🚀 Processes' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.📡 Protocols": {
+    "message": "📡 Protocols",
+    "description": "The label for category '📡 Protocols' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.🏠 Station": {
+    "message": "🏠 Station",
+    "description": "The label for category '🏠 Station' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.☁️ Cloud": {
+    "message": "☁️ Cloud",
+    "description": "The label for category '☁️ Cloud' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.📱 Mobile": {
+    "message": "📱 Mobile",
+    "description": "The label for category '📱 Mobile' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.💡 Firmware": {
+    "message": "💡 Firmware",
+    "description": "The label for category '💡 Firmware' in sidebar 'docs'"
+  },
+  "sidebar.docs.category.⚙️ Setup": {
+    "message": "⚙️ Setup",
+    "description": "The label for category '⚙️ Setup' in sidebar 'docs'"
+  }
+}
