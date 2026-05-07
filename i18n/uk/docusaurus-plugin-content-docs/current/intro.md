@@ -1,6 +1,7 @@
 ---
 id: intro
 title: Svaroh Docs
+slug: /
 sidebar_position: 0
 ---
 
