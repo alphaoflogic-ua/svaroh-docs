@@ -176,23 +176,31 @@ sequenceDiagram
 
 ## 8. BLE Provisioning {#ble-provisioning}
 
-Adding a new ESP32 to the network — mobile uses BLE to send Wi-Fi credentials.
+Adding a new ESP32 to the network — the **Station backend (RPi)** scans via BLE and provisions the device. The user interacts through the Station Frontend SPA.
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant U as 👤 User
-    participant M as 📱 Mobile
+    participant F as 🌐 Station Frontend
+    participant B as 🖥️ Station Backend
+    participant PY as 🐍 ble_bridge.py
     participant E as 💡 ESP32 (factory)
-    participant S as 🏠 Station
 
     Note over E: factory state → BLE advertise
-    M->>E: BLE scan + connect
-    M->>E: BLE characteristic write<br/>{ ssid, psk, stationHost }
+    U->>F: open "Add Device"
+    F->>B: WS provisioning_start
+    B->>PY: startScan()
+    PY-->>B: candidate { externalId, deviceType }
+    B-->>F: WS provisioning_candidate
+
+    U->>F: select + enter Wi-Fi credentials
+    F->>B: POST /provisioning/add { externalId, ssid, psk }
+    B->>PY: connectAndWrite(externalId, credentials)
+    PY->>E: BLE write { ssid, psk, stationHost }
     E->>E: connect Wi-Fi
-    E->>S: MQTT .../handshake<br/>{ type, firmwareVersion, chip }
-    S-->>E: MQTT .../handshake/ack { status: "ok" }
-    S-->>M: WS provisioning candidate appeared
-    M->>S: POST /api/devices (claim candidate)
-    S-->>M: device record
+
+    E->>B: MQTT .../handshake { type, firmwareVersion, chip }
+    B-->>E: MQTT .../handshake/ack { status: "ok" }
+    B-->>F: WS device appeared
 ```
