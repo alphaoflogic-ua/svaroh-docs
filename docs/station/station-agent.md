@@ -5,59 +5,74 @@ sidebar_position: 3
 
 # 🤖 station-agent
 
-Native Node.js binary on Raspberry Pi. Manages Docker containers for backend/frontend, self-updates from public GitHub releases.
+Native Node.js binary on Raspberry Pi. Manages Docker containers for backend/frontend and ESP32 OTA firmware updates.
 
 [Source ↗](https://github.com/alphaoflogic-ua/smart-home/tree/develop/station-agent)
 
 ## Responsibilities
 
-- Pull and run Docker images for backend, frontend, postgres, mqtt
-- Self-update — fetch new binary from `smart-home-updates` repo
-- Provide Docker Hub credentials to the host (so app images can be pulled)
-- Expose health/control endpoints for first-boot bootstrap UI (`smartstation.local`)
+- Poll `release.json` for new Docker image versions
+- Pull and restart Docker stack (`docker compose pull` + `docker compose up -d`) with rollback on failure
+- Trigger ESP32 OTA firmware updates
+- Expose HTTP API for first-boot bootstrap UI (`smartstation.local`)
 
-## Lifecycle
+:::note Agent binary is NOT self-updating
+The agent binary is installed by `install-agent.sh` and managed by systemd. Updating the agent binary requires a new release tag (`agent-v*`) that triggers CI to rebuild and publish — then reinstall manually or via `install-agent.sh`.
+:::
+
+## Docker Update Lifecycle
 
 ```mermaid
 stateDiagram-v2
     [*] --> Boot
-    Boot --> CheckSelfUpdate: agent starts
-    CheckSelfUpdate --> Apply: new agent version available
-    CheckSelfUpdate --> Run: up to date
-    Apply --> Boot: replace binary + restart
-    Run --> Pull: docker compose pull
+    Boot --> Pull: docker compose pull (bootstrap)
     Pull --> Up: docker compose up -d
     Up --> Watch
-    Watch --> Pull: app version tag changed
+    Watch --> Poll: periodic check
+    Poll --> Pull: release.json appVersion changed
+    Poll --> Watch: up to date
+    Pull --> Rollback: healthcheck failed
+    Rollback --> Watch
     Watch --> [*]: shutdown
 ```
 
-## Self-Update Flow
+## Docker Update Flow
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant A as 🤖 station-agent
-    participant U as 📦 smart-home-updates
-    participant FS as 💾 RPi filesystem
+    participant R as 📦 release.json
+    participant DH as 🐳 Docker Hub
+    participant DC as 🐳 docker compose
 
-    A->>U: GET /release.json
-    U-->>A: { agentVersion, dockerComposeUrl, ... }
-    A->>A: compare with current
-    alt update available
-        A->>U: GET station-agent-linux-arm64
-        U-->>A: binary
-        A->>FS: write to tmp + chmod +x
-        A->>FS: atomic rename to active path
-        A->>A: re-exec self
+    A->>R: GET release.json
+    R-->>A: { appVersion, ... }
+    A->>A: compare with current_version.txt
+    alt new version
+        A->>DH: docker compose pull
+        DH-->>A: new images
+        A->>DC: docker compose up -d
+        A->>A: healthcheck
+        alt healthy
+            A->>A: write current_version.txt
+        else failed
+            A->>DC: rollback to previous images
+        end
     end
 ```
 
 ## Distribution
 
-- Built in `station-agent/` package (SEA — Single Executable Application)
+- Built as SEA (Single Executable Application) from `station-agent/` package
 - Published to [`smart-home-updates/station-agent/` ↗](https://github.com/alphaoflogic-ua/smart-home-updates/tree/main/station-agent) on release
-- Installed by [`install-agent.sh` ↗](https://github.com/alphaoflogic-ua/smart-home-updates/blob/main/install-agent.sh)
+- Installed and registered as systemd service by [`install-agent.sh` ↗](https://github.com/alphaoflogic-ua/smart-home-updates/blob/main/install-agent.sh)
+
+## Key Files
+
+- `src/updater.js` — Docker image polling, pull, healthcheck, rollback
+- `src/server.js` — HTTP API, periodic checks, firmware updater
+- `src/bootstrap.js` — initial Docker stack startup
 
 ## Reference
 
