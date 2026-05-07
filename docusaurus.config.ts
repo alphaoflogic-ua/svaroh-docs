@@ -7,7 +7,7 @@ const config: Config = {
   tagline: 'Smart Home Ecosystem',
   favicon: 'img/favicon.ico',
 
-  url: 'https://docs.example.com', // TODO: replace with actual domain
+  url: 'https://docs.svaroh.com',
   baseUrl: '/',
 
   onBrokenLinks: 'warn',
