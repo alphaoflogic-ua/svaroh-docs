@@ -56,6 +56,7 @@ const config: Config = {
   ],
 
   themeConfig: {
+    image: 'img/social-card.png',
     navbar: {
       title: 'Svaroh Docs',
       logo: {
