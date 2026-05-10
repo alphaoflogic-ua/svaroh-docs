@@ -11,19 +11,19 @@ The Station maintains a persistent WSS connection to Cloud. Two modes:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Unclaimed: install-agent.sh<br/>chipId + claimSecret
-    Unclaimed --> Claimed: mobile claim<br/>(stationToken issued)
+    [*] --> Unclaimed: agent install<br/>(bootstrap creds)
+    Unclaimed --> Claimed: mobile claim<br/>(token issued)
     Claimed --> Unclaimed: factory reset
 
     state Unclaimed {
         [*] --> claim_handshake
-        claim_handshake: claim_handshake<br/>{ chipId, claimSecret }
     }
     state Claimed {
         [*] --> station_auth
-        station_auth: station_auth<br/>{ stationToken }
     }
 ```
+
+Two handshake messages exist (`claim_handshake` for unclaimed stations, `station_auth` for claimed). Exact payloads are intentionally not documented publicly.
 
 ## JSON-RPC over WS {#jsonrpc}
 

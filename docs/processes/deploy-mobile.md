@@ -18,11 +18,15 @@ App is live in TestFlight. Builds automatically on every `v*.*.*` tag via GitHub
 | App name | Svaroh |
 | Bundle ID (iOS + Android) | `com.andriiprudnikov.svaroh` |
 | URL scheme | `svaroh://` |
-| Apple Team ID | `3S4F23LWUZ` |
-| Apple ID (submit account) | `ouprudnikova@gmail.com` |
-| ASC App ID | `6764770361` |
-| EAS project ID | `0fe52c33-c0fe-4e3f-a04a-a102f028b479` |
-| EAS owner | `alphaoflogiccode` |
+| Apple Team ID | `<APPLE_TEAM_ID>` |
+| Apple ID (submit account) | `<APPLE_SUBMIT_EMAIL>` |
+| ASC App ID | `<ASC_APP_ID>` |
+| EAS project ID | `<EAS_PROJECT_ID>` |
+| EAS owner | `<EAS_OWNER>` |
+
+:::note
+Real values live in the team password manager / EAS dashboard, not in this repo.
+:::
 
 ---
 

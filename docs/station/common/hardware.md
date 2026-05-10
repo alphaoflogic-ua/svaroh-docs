@@ -124,4 +124,3 @@ See [station/backend/domain → kits](/station/backend/domain#kits) for how pres
 - Full hardware design notes: [`docs/hardware/README.md` ↗](https://github.com/alphaoflogic-ua/smart-home/blob/develop/docs/hardware/README.md)
 - KiCad schematics: `firmware/esp32-switch-pir/hardware/`, `firmware/esp32-light/hardware/`
 - LED strip: Biom ST-12-2835-120-DCCT-20 3CCT (1500 lm/m, 17 W/m, 4-wire +12V/WW/NW/CW)
-- Competitor analysis: [`docs/hardware/competitors.md` ↗](https://github.com/alphaoflogic-ua/smart-home/blob/develop/docs/hardware/competitors.md)

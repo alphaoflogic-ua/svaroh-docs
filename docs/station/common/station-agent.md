@@ -82,8 +82,8 @@ sequenceDiagram
 {
   "version": "1.2.3",
   "images": {
-    "backend": "andriicode/smart-home-backend:1.2.3",
-    "frontend": "andriicode/smart-home-frontend:1.2.3"
+    "backend": "<dockerhub-org>/smart-home-backend:1.2.3",
+    "frontend": "<dockerhub-org>/smart-home-frontend:1.2.3"
   }
 }
 ```

@@ -129,24 +129,17 @@ stateDiagram-v2
     CheckToken --> Claimed: stationToken present
 
     Unclaimed --> ClaimHandshake: WSS connect
-    ClaimHandshake --> WaitingClaim: send claim_handshake { chipId, claimSecret }
-    WaitingClaim --> Claimed: receive claim_success { stationToken }
+    ClaimHandshake --> WaitingClaim: send claim_handshake
+    WaitingClaim --> Claimed: receive claim_success
     Claimed --> StationAuth: WSS reconnect
-    StationAuth --> Authenticated: send station_auth { stationToken }
+    StationAuth --> Authenticated: send station_auth
     Authenticated --> Authenticated: heartbeat ping/pong every 30s
     Authenticated --> [*]: pending_reset / token invalid → wipe + restart
 ```
 
 ### JSON-RPC Methods Registered (Cloud → Station)
 
-After `auth_ok`, the station registers handlers callable by Cloud via `peer.call()`:
-
-| Method | Params | Returns | Effect |
-|---|---|---|---|
-| `device.command` | `{ deviceId, command }` | `{ status: 'ok' }` | Forwards to MQTT via `devicesService.sendCommandDirect()` |
-| `devices.snapshot` | — | `{ devices: Device[] }` | Returns all local devices |
-| `device_types.list` | — | `{ deviceTypes: DeviceType[] }` | Returns the registry |
-| `station.setActiveChannels` | `{ channels: EventChannel[] }` | `{ ok: true }` | Filters which event categories Cloud receives |
+After `auth_ok`, the station registers a handful of handlers callable by Cloud via `peer.call()` — covering device commands, device/type snapshots and event-channel configuration. Exact method names and payload shapes live in the source.
 
 ### Outbound (Station → Cloud)
 
@@ -158,17 +151,7 @@ Backend pings the WSS every 30s; if no `pong` within the next interval — `term
 
 ### cloud-sync Message Handlers
 
-The Cloud sends "legacy" plain-JSON messages (not JSON-RPC) for identity changes — `peer.onLegacyMessage` forwards them to `processCloudMessage`:
-
-| Message type | Effect on station |
-|---|---|
-| `identity_sync` | Bulk upsert all members into local `users` table; rename station; set owner |
-| `station_renamed` | Update `station.name` |
-| `member_added` | Upsert one user (linked by `cloud_user_id`) |
-| `member_updated` | Update local `users` row by cloud_user_id |
-| `member_removed` | Delete local user by cloud_user_id |
-| `station_password_changed` | Update `station_password_hash` for that user |
-| `station_reset` | Wipe `cloud_config`, broadcast `factory_reset` to all devices, exit process |
+The Cloud sends "legacy" plain-JSON messages (not JSON-RPC) for identity and lifecycle changes — `peer.onLegacyMessage` forwards them to `processCloudMessage`. They cover member sync (add / update / remove), station rename, password sync and factory reset. Handler details live in the source.
 
 ## Auth Hooks Deep Dive {#auth}
 

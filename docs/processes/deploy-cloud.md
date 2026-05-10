@@ -16,8 +16,7 @@ Staging is live at **svaroh.com**. Auto-deploys on every `v*` tag via GitHub Act
 | Purpose | URL |
 |---------|-----|
 | REST API | `https://api.staging.svaroh.com` |
-| WebSocket (stations + mobile relay) | `wss://api.staging.svaroh.com/ws/…` |
-| WSS alias (separate host if needed) | `wss://wss.staging.svaroh.com` |
+| WebSocket (stations + mobile relay) | `wss://api.staging.svaroh.com/<ws-path>` |
 | Health check | `https://api.staging.svaroh.com/health` |
 | Docs site | `https://docs.svaroh.com` |
 | Universal Links / AASA | `https://app.staging.svaroh.com` |
@@ -39,8 +38,7 @@ Staging is live at **svaroh.com**. Auto-deploys on every `v*` tag via GitHub Act
 | `caddy` | `caddy:2-alpine` | Reverse proxy + TLS (Let's Encrypt) |
 
 Caddy serves:
-- `api.staging.svaroh.com` → `cloud:4000` (HTTP + WebSocket, no timeouts on `/ws/*`)
-- `wss.staging.svaroh.com` → `cloud:4000` (WebSocket alias)
+- `api.staging.svaroh.com` → `cloud:4000` (HTTP + WebSocket)
 - `docs.svaroh.com` → static build from `~/svaroh-docs/build`
 - `app.staging.svaroh.com` → static files (AASA, Universal Links landing)
 
@@ -85,21 +83,14 @@ Key variables:
 | `DB_HOST` / `DB_PORT` / `DB_USER` / `DB_PASSWORD` / `DB_NAME` | PostgreSQL connection |
 | `JWT_SECRET` / `JWT_REFRESH_SECRET` | Token signing |
 | `JWT_EXPIRES_IN` / `JWT_REFRESH_EXPIRES_IN` | `15m` / `30d` |
-| `APPLE_CLIENT_ID` | `com.andriiprudnikov.smarthomemobile` |
+| `APPLE_CLIENT_ID` | `<APPLE_CLIENT_ID>` (Sign in with Apple bundle ID) |
 
 ---
 
 ## Connecting a station to staging
 
-On the Raspberry Pi, set in `.env` and restart:
-
-```bash
-CLOUD_WSS_URL=wss://api.staging.svaroh.com/ws/station
-```
-
-Then watch cloud logs:
+On the Raspberry Pi, set `CLOUD_WSS_URL` in `.env` (exact path is in the deployment runbook) and restart. Then watch cloud logs:
 
 ```bash
 docker compose -f docker-compose.staging.yml logs -f cloud
-# Expect: claim_handshake from the station
 ```

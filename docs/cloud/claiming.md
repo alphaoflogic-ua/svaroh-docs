@@ -17,22 +17,22 @@ sequenceDiagram
     participant M as 📱 Mobile
     participant U as 👤 Owner
 
-    Note over P: install-agent.sh<br/>chipId + claimSecret generated
-    P->>C: WSS connect (unclaimed)<br/>claim_handshake { chipId, claimSecret }
+    Note over P: agent install generates<br/>bootstrap credentials
+    P->>C: WSS connect (unclaimed)<br/>claim_handshake
     C->>C: store pending station
 
-    Note over P: smartstation.local shows QR<br/>(chipId + claimSecret encoded)
+    Note over P: smartstation.local shows QR
 
     U->>M: scan QR
-    M->>C: POST /api/stations/claim<br/>{ chipId, claimSecret }
+    M->>C: POST /api/stations/claim
     C->>C: validate match
     C->>C: INSERT station + station_member (owner)
-    C->>C: generate stationToken
+    C->>C: issue station token
     C-->>M: 200 { stationId }
-    C->>P: WSS message: claimed { stationToken }
-    P->>P: persist token in cloud_config table
+    C->>P: WSS message: claimed
+    P->>P: persist token locally
 
-    P->>C: WSS reconnect (claimed)<br/>station_auth { stationToken }
+    P->>C: WSS reconnect (claimed)<br/>station_auth
     C-->>P: ack
 ```
 
